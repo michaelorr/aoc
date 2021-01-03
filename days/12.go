@@ -14,6 +14,11 @@ type Ship struct {
 	Y       int
 }
 
+type Waypoint struct {
+	X int
+	Y int
+}
+
 type Instruction struct {
 	Command string
 	Amount  int
@@ -44,7 +49,7 @@ func Day12Part1(in []Instruction, finished chan bool) {
 	s := Ship{Heading: 90}
 
 	for _, inst := range in {
-		s.ApplyInst(inst)
+		s.ApplyInst1(inst)
 	}
 
 	a := s.X
@@ -62,7 +67,7 @@ func Day12Part1(in []Instruction, finished chan bool) {
 	finished <- true
 }
 
-func (s *Ship) ApplyInst(i Instruction) {
+func (s *Ship) ApplyInst1(i Instruction) {
 	switch i.Command {
 	case "R":
 		s.Heading = (s.Heading + i.Amount) % 360
@@ -94,6 +99,56 @@ func (s *Ship) ApplyInst(i Instruction) {
 func Day12Part2(in []Instruction, finished chan bool) {
 	var out int
 
+	s := Ship{}
+	waypoint := Waypoint{X: 10, Y: 1}
+
+	for _, inst := range in {
+		ApplyInst2(&s, &waypoint, inst)
+	}
+
+	a := s.X
+	if a < 0 {
+		a *= -1
+	}
+
+	b := s.Y
+	if b < 0 {
+		b *= -1
+	}
+	out = a + b
+
 	fmt.Printf("Part 2:\n\t%d\n", out)
 	finished <- true
+}
+
+func ApplyInst2(s *Ship, w *Waypoint, i Instruction) {
+	switch i.Command {
+	case "R":
+		if i.Amount == 90 {
+			w.X, w.Y = w.Y, -w.X
+		} else if i.Amount == 180 {
+			w.X, w.Y = -w.X, -w.Y
+		} else if i.Amount == 270 {
+			w.X, w.Y = -w.Y, w.X
+		}
+	case "L":
+		if i.Amount == 90 {
+			w.X, w.Y = -w.Y, w.X
+		} else if i.Amount == 180 {
+			w.X, w.Y = -w.X, -w.Y
+		} else if i.Amount == 270 {
+			w.X, w.Y = w.Y, -w.X
+		}
+	case "F":
+		s.X += i.Amount * w.X
+		s.Y += i.Amount * w.Y
+	case "E":
+		w.X += i.Amount
+	case "N":
+		w.Y += i.Amount
+	case "S":
+		w.Y -= i.Amount
+	case "W":
+		w.X -= i.Amount
+	}
 }
